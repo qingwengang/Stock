@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
@@ -46,5 +47,15 @@ public class StockTransactionDetailDao {
 		session.getTransaction().commit();
 		session.close();
 		return (StockTransactionDetail)o;
+	}
+	public static List QuerySql(String sql){
+		List result;
+		SessionFactory sf=HibernateUtil.getSessionFactory();
+		Session session=sf.openSession();
+		session.beginTransaction();
+		result=session.createSQLQuery(sql).list();
+		session.getTransaction().commit();
+		session.close();
+		return result;
 	}
 }

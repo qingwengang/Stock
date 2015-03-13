@@ -39,6 +39,7 @@
            
      <!--   <mapping resource="com/bird/model/Student.hbm.xml"/> -->   
         <mapping class="com.ganggang.Stock.Entity.StockTransactionDetail"/>
+        <mapping class="com.ganggang.Stock.Entity.PlanDeal"/>
     </session-factory>  
   
 </hibernate-configuration>  
