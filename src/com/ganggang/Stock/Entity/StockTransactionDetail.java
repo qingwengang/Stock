@@ -17,7 +17,7 @@ public class StockTransactionDetail {
 	private double LowestPrice;
 	private long Volume;
 	private long TransactionMoney;
-	private double VolumeRate;
+	private Double VolumeRate;
 	@javax.persistence.Id
 	public int getId() {
 		return Id;
@@ -73,10 +73,10 @@ public class StockTransactionDetail {
 	public void setTransactionMoney(long transactionMoney) {
 		TransactionMoney = transactionMoney;
 	}
-	public double getVolumeRate() {
+	public Double getVolumeRate() {
 		return VolumeRate;
 	}
-	public void setVolumeRate(double volumeRate) {
+	public void setVolumeRate(Double volumeRate) {
 		VolumeRate = volumeRate;
 	}
 }
