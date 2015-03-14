@@ -73,7 +73,7 @@ public class StockAnaly {
 			// }
 			List<StockTransactionDetail> details = StockTransactionDetailDao
 					.Query(String
-							.format("select * from stocktransactiondetail where TransactionDate='%s' order by VolumeRate desc LIMIT 0,1",
+							.format("select * from stocktransactiondetail where TransactionDate='%s' order by VolumeRate desc LIMIT 0,3",
 									transactionDate));
 			if (details != null) {
 				for (StockTransactionDetail detail : details) {
