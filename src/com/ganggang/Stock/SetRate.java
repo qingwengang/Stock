@@ -42,8 +42,8 @@ public class SetRate implements Runnable {
 					details.get(i).setVolumeRate((double)0);
 				} else {
 					DecimalFormat df = new DecimalFormat("0.0000");
-					long avergVolume=(details.get(i-1).getVolume()+details.get(i-2).getVolume()+details.get(i-3).getVolume()+details.get(i-4).getVolume()+details.get(i-5).getVolume())/5;
-//					avergVolume=details.get(i-1).getVolume();
+//					long avergVolume=(details.get(i-1).getVolume()+details.get(i-2).getVolume()+details.get(i-3).getVolume()+details.get(i-4).getVolume()+details.get(i-5).getVolume())/5;
+					long avergVolume=details.get(i-1).getVolume();
 					double rate = Double.parseDouble(df
 							.format((float) details.get(i).getVolume()
 									/ avergVolume));

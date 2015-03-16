@@ -79,4 +79,9 @@ public class StockTransactionDetail {
 	public void setVolumeRate(Double volumeRate) {
 		VolumeRate = volumeRate;
 	}
+	@Override
+	public String toString() {
+		return String.format("code:%s,transactionDate:%s,EndPrice:%s", getCode(),getTransactionDate().toString(),getEndPrice());
+	}
+	
 }

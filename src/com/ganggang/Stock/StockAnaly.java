@@ -61,28 +61,23 @@ public class StockAnaly {
 		Iterator it = sq.iterator();
 		while (it.hasNext()) {
 			String transactionDate = ((Date) it.next()).toString();
-			// StockTransactionDetail detail = StockTransactionDetailDao
-			// .QueryUnique(String.format("select * from stocktransactiondetail where TransactionDate='%s' order by VolumeRate desc LIMIT 0,1",transactionDate));
-			// if(detail!=null){
-			// PlanDeal deal=new PlanDeal();
-			// deal.setTransactionDate(detail.getTransactionDate());
-			// deal.setCode(detail.getCode());
-			// deal.setVolumeRate(detail.getVolumeRate());
-			// deal.setClosePrice(detail.getEndPrice());
-			// PlanDealDao.AddStockInfo(deal);
-			// }
 			List<StockTransactionDetail> details = StockTransactionDetailDao
 					.Query(String
-							.format("select * from stocktransactiondetail where TransactionDate='%s' order by VolumeRate desc LIMIT 0,3",
+							.format("select * from stocktransactiondetail where TransactionDate='%s' and EndPrice>BeginPrice order by VolumeRate desc LIMIT 0,100",
 									transactionDate));
 			if (details != null) {
 				for (StockTransactionDetail detail : details) {
-					PlanDeal deal = new PlanDeal();
-					deal.setTransactionDate(detail.getTransactionDate());
-					deal.setCode(detail.getCode());
-					deal.setVolumeRate(detail.getVolumeRate());
-					deal.setClosePrice(detail.getEndPrice());
-					PlanDealDao.AddStockInfo(deal);
+					String sqlSecond=String.format("select *  from stocktransactiondetail where Code='%s' and TransactionDate<'%s' order by TransactionDate desc limit 0,2", detail.getCode(),detail.getTransactionDate().toString());
+					List<StockTransactionDetail> secondDetails=StockTransactionDetailDao.Query(sqlSecond);
+					if(secondDetails.get(0).getEndPrice()<detail.getEndPrice()&&secondDetails.get(1).getEndPrice()>secondDetails.get(0).getEndPrice()){
+						PlanDeal deal = new PlanDeal();
+						deal.setTransactionDate(detail.getTransactionDate());
+						deal.setCode(detail.getCode());
+						deal.setVolumeRate(detail.getVolumeRate());
+						deal.setClosePrice(detail.getEndPrice());
+						PlanDealDao.AddStockInfo(deal);
+						break;
+					}
 				}
 			}
 		}
