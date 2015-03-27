@@ -14,15 +14,12 @@ import com.ganggang.Stock.Entity.*;
 public class StockAnaly {
 
 	public static void main(String[] args) {
-		// SetVolumeRate();
-		// List
-		// sq=StockTransactionDetailDao.QuerySql("select DISTINCT TransactionDate from stocktransactiondetail where TransactionDate>'2014-01-01' order by TransactionDate");
-		// sq.forEach((x)->System.out.println((Date)x));
-		// System.out.println(sq);
 //		Moni();
 //		SetBuyDate();
 //		SetSellDate();
 		AanalyZhuang("600628","2014-01-01","2015-02-02",2,3);
+		SetLowPercent();
+		SetLastClosePrice();
 	}
 	
 	public static void AanalyZhuang(String code,String begin,String end,int days,double times){
@@ -46,40 +43,10 @@ public class StockAnaly {
 		System.out.println("AanalyZhuang end");
 	}
 
-	public static void SetVolumeRate() {
-		String sqlGetOne = "select  *  from stocktransactiondetail where VolumeRate=-1 limit 0,1";
-		StockTransactionDetail detail = StockTransactionDetailDao
-				.QueryUnique(sqlGetOne);
-		while (detail != null) {
-			if (detail != null) {
-				String sqlGetAll = String
-						.format("select *  from stocktransactiondetail where code='%s' and VolumeRate=-1 order by TransactionDate",
-								detail.getCode());
-				List<StockTransactionDetail> details = StockTransactionDetailDao
-						.Query(sqlGetAll);
-				for (int i = 0; i < details.size(); i++) {
-					if (i == 0) {
-						details.get(i).setVolumeRate((double) 0);
-					} else {
-						DecimalFormat df = new DecimalFormat("0.0000");
-						double rate = Double.parseDouble(df
-								.format((float) details.get(i - 1).getVolume()
-										/ details.get(i).getVolume()));
-						details.get(i).setVolumeRate(rate);
-					}
-					StockTransactionDetailDao.UpdateCategory(details.get(i));
-				}
-			}
-			detail = StockTransactionDetailDao.QueryUnique(sqlGetOne);
-			System.out.println("1");
-		}
-		System.out.println("end");
-	}
-
 	public static void Moni() {
 		System.out.println("moni start!");
 		List sq = StockTransactionDetailDao
-				.QuerySql("select DISTINCT TransactionDate from stocktransactiondetail where TransactionDate>'2014-01-01' order by TransactionDate");
+				.QuerySql("select DISTINCT TransactionDate from stocktransactiondetail where TransactionDate>'2014-01-01' and TransactionDate<'2015-01-01' order by TransactionDate");
 		Iterator it = sq.iterator();
 		while (it.hasNext()) {
 			String transactionDate = ((Date) it.next()).toString();
@@ -88,17 +55,25 @@ public class StockAnaly {
 							.format("select * from stocktransactiondetail where TransactionDate='%s' and EndPrice>BeginPrice order by VolumeRate desc LIMIT 0,100",
 									transactionDate));
 			if (details != null) {
+				int i=1;
 				for (StockTransactionDetail detail : details) {
-					String sqlSecond=String.format("select *  from stocktransactiondetail where Code='%s' and TransactionDate<'%s' order by TransactionDate desc limit 0,2", detail.getCode(),detail.getTransactionDate().toString());
-					List<StockTransactionDetail> secondDetails=StockTransactionDetailDao.Query(sqlSecond);
-					if(secondDetails.get(0).getEndPrice()<detail.getEndPrice()&&secondDetails.get(1).getEndPrice()>secondDetails.get(0).getEndPrice()){
-						PlanDeal deal = new PlanDeal();
-						deal.setTransactionDate(detail.getTransactionDate());
-						deal.setCode(detail.getCode());
-						deal.setVolumeRate(detail.getVolumeRate());
-						deal.setClosePrice(detail.getEndPrice());
-						PlanDealDao.AddStockInfo(deal);
-						break;
+					if(!detail.getCode().startsWith("3")){
+						String sqlSecond=String.format("select *  from stocktransactiondetail where Code='%s' and TransactionDate<'%s' order by TransactionDate desc limit 0,2", detail.getCode(),detail.getTransactionDate().toString());
+						List<StockTransactionDetail> secondDetails=StockTransactionDetailDao.Query(sqlSecond);
+						if(secondDetails.get(0).getEndPrice()<detail.getEndPrice()&&secondDetails.get(1).getEndPrice()>secondDetails.get(0).getEndPrice()){
+							PlanDeal deal = new PlanDeal();
+							deal.setTransactionDate(detail.getTransactionDate());
+							deal.setCode(detail.getCode());
+							deal.setVolumeRate(detail.getVolumeRate());
+							deal.setClosePrice(detail.getEndPrice());
+							deal.setExceptBuyPrice(detail.getLowestPrice());
+							deal.setExceptSellPrice(detail.getHighestPrice());
+							PlanDealDao.AddStockInfo(deal);
+							i--;
+							if(i<1){
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -111,7 +86,7 @@ public class StockAnaly {
 		List<PlanDeal> deals = PlanDealDao
 				.Query("select *  from plandeal where BuyPrice=0  order by transactiondate");
 		for (PlanDeal deal : deals) {
-			double buyPrice = deal.getClosePrice() * 0.95;
+			double buyPrice = deal.getExceptBuyPrice();
 			StockTransactionDetail dealBuy = StockTransactionDetailDao
 					.QueryUnique(String
 							.format("select * from stocktransactiondetail where code='%s' and TransactionDate>'%s' and LowestPrice<%s order by TransactionDate limit 0,1",
@@ -131,7 +106,7 @@ public class StockAnaly {
 		List<PlanDeal> deals = PlanDealDao
 				.Query("select *  from plandeal where buyPrice!=0 and SellPrice=0  order by transactiondate");
 		for (PlanDeal deal : deals) {
-			double sellPrice = deal.getClosePrice() * 1.05;
+			double sellPrice = deal.getExceptSellPrice();
 			StockTransactionDetail dealBuy = StockTransactionDetailDao
 					.QueryUnique(String
 							.format("select * from stocktransactiondetail where code='%s' and TransactionDate>'%s' and HighestPrice>%s order by TransactionDate limit 0,1",
@@ -144,5 +119,29 @@ public class StockAnaly {
 			}
 		}
 		System.out.println("sell end!");
+	}
+	public static void SetLowPercent(){
+		System.out.println("setlowpercent start!");
+		List<PlanDeal> deals = PlanDealDao
+				.Query("select *  from plandeal where buyPrice!=0 and SellPrice!=0  order by transactiondate");
+		for (PlanDeal deal : deals) {
+			List l=StockTransactionDetailDao.QuerySql(String.format("select min(LowestPrice) from stocktransactiondetail where CODE='%s' and TransactionDate>='%s' and TransactionDate<='%s'", deal.getCode(),deal.getBuyDate(),deal.getSellDate()));
+			double lowestPrice=(double)l.get(0);
+			deal.setLowPercent(lowestPrice/deal.getClosePrice());
+			deal.setHandDays(0);
+			PlanDealDao.Update(deal);
+		}
+		System.out.println("setlowpercent end!");
+	}
+	public static void SetLastClosePrice(){
+		System.out.println("SetLastClosePrice start!");
+		List<PlanDeal> deals = PlanDealDao
+				.Query("select *  from plandeal  order by transactiondate");
+		for (PlanDeal deal : deals) {
+			StockTransactionDetail detail=StockTransactionDetailDao.QueryUnique(String.format("select * FROM stocktransactiondetail where code='%s'  order by TransactionDate desc limit 0,1",deal.getCode()));
+			deal.setLastClosePrice(detail.getEndPrice());
+			PlanDealDao.Update(deal);
+		}
+		System.out.println("SetLastClosePrice end!");
 	}
 }

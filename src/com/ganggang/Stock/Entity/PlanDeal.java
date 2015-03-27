@@ -14,6 +14,11 @@ public class PlanDeal {
 	private double BuyPrice;
 	private Date SellDate;
 	private double SellPrice;
+	private double LowPercent;
+	private int HandDays;
+	private double LastClosePrice;
+	private double ExceptBuyPrice;
+	private double ExceptSellPrice;
 	@javax.persistence.Id
 	public int getId() {
 		return Id;
@@ -68,6 +73,36 @@ public class PlanDeal {
 	}
 	public void setSellPrice(double sellPrice) {
 		SellPrice = sellPrice;
+	}
+	public double getLowPercent() {
+		return LowPercent;
+	}
+	public void setLowPercent(double lowPercent) {
+		LowPercent = lowPercent;
+	}
+	public int getHandDays() {
+		return HandDays;
+	}
+	public void setHandDays(int handDays) {
+		HandDays = handDays;
+	}
+	public double getLastClosePrice() {
+		return LastClosePrice;
+	}
+	public void setLastClosePrice(double lastClosePrice) {
+		LastClosePrice = lastClosePrice;
+	}
+	public double getExceptBuyPrice() {
+		return ExceptBuyPrice;
+	}
+	public void setExceptBuyPrice(double exceptBuyPrice) {
+		ExceptBuyPrice = exceptBuyPrice;
+	}
+	public double getExceptSellPrice() {
+		return ExceptSellPrice;
+	}
+	public void setExceptSellPrice(double exceptSellPrice) {
+		ExceptSellPrice = exceptSellPrice;
 	}
 	
 
