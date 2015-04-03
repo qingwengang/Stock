@@ -8,6 +8,7 @@ import java.util.List;
 import org.hibernate.SQLQuery;
 
 import com.ganggang.Stock.Dao.PlanDealDao;
+import com.ganggang.Stock.Dao.StockInfoDao;
 import com.ganggang.Stock.Dao.StockTransactionDetailDao;
 import com.ganggang.Stock.Entity.*;
 
@@ -17,31 +18,37 @@ public class StockAnaly {
 //		Moni();
 //		SetBuyDate();
 //		SetSellDate();
-		AanalyZhuang("600628","2014-01-01","2015-02-02",2,3);
-		SetLowPercent();
-		SetLastClosePrice();
+		AanalyZhuang("600628","2014-01-01","2015-02-02",2,5);
+//		SetLowPercent();
+//		SetLastClosePrice();
 	}
 	
 	public static void AanalyZhuang(String code,String begin,String end,int days,double times){
 		System.out.println("AanalyZhuang start");
-		String sql="select * from stocktransactiondetail where code='%s' and TransactionDate>='%s' and TransactionDate<='%s' order by TransactionDate";
-		List<StockTransactionDetail> details=StockTransactionDetailDao.Query(String.format(sql, code,begin,end));
-		for(int i=20;i<details.size();i++){
-			Boolean flag=true;
-			for(int j=0;j<days;j++){
-				for(int k=i-1;k>=i-5;k--){
-					if(details.get(i+j).getVolume()/details.get(k).getVolume()<times){
-						flag=false;
-						break;
+		String sqlGetAll="select * from stockinfo";
+		List<StockInfo> stocks=StockInfoDao.Query(sqlGetAll);
+		for (StockInfo stockInfo : stocks) {
+			code=stockInfo.getCode();
+			String sql="select * from stocktransactiondetail where code='%s' and TransactionDate>='%s' and TransactionDate<='%s' order by TransactionDate";
+			List<StockTransactionDetail> details=StockTransactionDetailDao.Query(String.format(sql, code,begin,end));
+			for(int i=20;i<details.size();i++){
+				Boolean flag=true;
+				for(int j=0;j<days;j++){
+					for(int k=i-1;k>=i-5;k--){
+						if(details.get(i+j).getVolume()/details.get(k).getVolume()<times){
+							flag=false;
+							break;
+						}
 					}
+					if(!flag)break;
 				}
-				if(!flag)break;
+				if(!flag) continue;
+				System.out.println("code:"+code+",date:"+details.get(i).getTransactionDate());
 			}
-			if(!flag) continue;
-			System.out.println("code:"+code+",date:"+details.get(i).getTransactionDate());
 		}
 		System.out.println("AanalyZhuang end");
 	}
+	
 
 	public static void Moni() {
 		System.out.println("moni start!");
