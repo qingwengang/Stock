@@ -19,6 +19,7 @@ public class PlanDeal {
 	private double LastClosePrice;
 	private double ExceptBuyPrice;
 	private double ExceptSellPrice;
+	private int Plantype;
 	@javax.persistence.Id
 	public int getId() {
 		return Id;
@@ -104,6 +105,10 @@ public class PlanDeal {
 	public void setExceptSellPrice(double exceptSellPrice) {
 		ExceptSellPrice = exceptSellPrice;
 	}
-	
-
+	public int getPlantype() {
+		return Plantype;
+	}
+	public void setPlantype(int plantype) {
+		Plantype = plantype;
+	}
 }

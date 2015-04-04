@@ -11,19 +11,21 @@ import com.ganggang.Stock.Dao.PlanDealDao;
 import com.ganggang.Stock.Dao.StockInfoDao;
 import com.ganggang.Stock.Dao.StockTransactionDetailDao;
 import com.ganggang.Stock.Entity.*;
+import com.ganggang.Util.FormatUtil;
 
 public class StockAnaly {
 
 	public static void main(String[] args) {
 //		Moni();
+		
+		AanalyZhuang("600628","2014-01-01","2015-02-02",1,5,5);
+//		SetLowPercent();
+		SetLastClosePrice();
 //		SetBuyDate();
 //		SetSellDate();
-		AanalyZhuang("600628","2014-01-01","2015-02-02",2,5);
-//		SetLowPercent();
-//		SetLastClosePrice();
 	}
 	
-	public static void AanalyZhuang(String code,String begin,String end,int days,double times){
+	public static void AanalyZhuang(String code,String begin,String end,int days,int beforeDays,double times){
 		System.out.println("AanalyZhuang start");
 		String sqlGetAll="select * from stockinfo";
 		List<StockInfo> stocks=StockInfoDao.Query(sqlGetAll);
@@ -31,19 +33,29 @@ public class StockAnaly {
 			code=stockInfo.getCode();
 			String sql="select * from stocktransactiondetail where code='%s' and TransactionDate>='%s' and TransactionDate<='%s' order by TransactionDate";
 			List<StockTransactionDetail> details=StockTransactionDetailDao.Query(String.format(sql, code,begin,end));
-			for(int i=20;i<details.size();i++){
-				Boolean flag=true;
-				for(int j=0;j<days;j++){
-					for(int k=i-1;k>=i-5;k--){
-						if(details.get(i+j).getVolume()/details.get(k).getVolume()<times){
-							flag=false;
-							break;
+			if(details.size()>20){
+				for(int i=beforeDays;i<details.size();i++){
+					Boolean flag=true;
+					for(int j=0;j<days&&j+i<details.size();j++){
+						for(int k=i-1;k>=i-beforeDays;k--){
+							if(details.get(i+j).getVolume()/details.get(k).getVolume()<times){
+								flag=false;
+								break;
+							}
 						}
+						if(!flag)break;
 					}
-					if(!flag)break;
+					if(!flag) continue;
+					System.out.println("code:"+code+",date:"+details.get(i).getTransactionDate());
+					PlanDeal deal = new PlanDeal();
+					deal.setTransactionDate(details.get(i).getTransactionDate());
+					deal.setCode(details.get(i).getCode());
+					deal.setVolumeRate(details.get(i).getVolumeRate());
+					deal.setClosePrice(details.get(i).getEndPrice());
+					deal.setExceptBuyPrice(details.get(i).getEndPrice()*0.9);
+					deal.setExceptSellPrice(details.get(i).getEndPrice());
+					PlanDealDao.AddStockInfo(deal);
 				}
-				if(!flag) continue;
-				System.out.println("code:"+code+",date:"+details.get(i).getTransactionDate());
 			}
 		}
 		System.out.println("AanalyZhuang end");
@@ -100,9 +112,11 @@ public class StockAnaly {
 									deal.getCode(), deal.getTransactionDate(),
 									buyPrice));
 			if (dealBuy != null) {
-				deal.setBuyDate(dealBuy.getTransactionDate());
-				deal.setBuyPrice(buyPrice);
-				PlanDealDao.Update(deal);
+				if(FormatUtil.AddDate(deal.getTransactionDate(), 15).after(dealBuy.getTransactionDate())){
+					deal.setBuyDate(dealBuy.getTransactionDate());
+					deal.setBuyPrice(buyPrice);
+					PlanDealDao.Update(deal);
+				}
 			}
 		}
 		System.out.println("buy end!");
