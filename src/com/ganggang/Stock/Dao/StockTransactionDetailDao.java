@@ -72,4 +72,21 @@ public class StockTransactionDetailDao {
 		session.close();
 		return result;
 	}
+	public static void AddStockTransactionDetail(StockTransactionDetail detail) {
+		SessionFactory sf = HibernateUtil.getSessionFactory();
+		Session session = sf.openSession();
+		session.beginTransaction();
+		session.save(detail);
+		session.getTransaction().commit();
+		session.close();
+	}
+	public static void AddStockTransactionDetail(List<StockTransactionDetail> details) {
+		SessionFactory sf = HibernateUtil.getSessionFactory();
+		Session session = sf.openSession();
+		session.beginTransaction();
+		details.forEach(x->session.save(x));
+		session.getTransaction().commit();
+		session.close();
+	}
+
 }

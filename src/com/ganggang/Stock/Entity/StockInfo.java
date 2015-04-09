@@ -16,6 +16,7 @@ public class StockInfo {
 	private long Volume;
 	private int IfGetHistory;
 	private Integer IfSetVolumeRate;
+	private String Symbol;
 	@javax.persistence.Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	public int getId() {
@@ -59,6 +60,12 @@ public class StockInfo {
 	}
 	public void setIfSetVolumeRate(Integer ifSetVolumeRate) {
 		IfSetVolumeRate = ifSetVolumeRate;
+	}
+	public String getSymbol() {
+		return Symbol;
+	}
+	public void setSymbol(String symbol) {
+		Symbol = symbol;
 	}
 	
 }

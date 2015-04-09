@@ -20,6 +20,7 @@ public class PlanDeal {
 	private double ExceptBuyPrice;
 	private double ExceptSellPrice;
 	private int Plantype;
+	private String Symbol;
 	@javax.persistence.Id
 	public int getId() {
 		return Id;
@@ -111,4 +112,11 @@ public class PlanDeal {
 	public void setPlantype(int plantype) {
 		Plantype = plantype;
 	}
+	public String getSymbol() {
+		return Symbol;
+	}
+	public void setSymbol(String symbol) {
+		Symbol = symbol;
+	}
+	
 }

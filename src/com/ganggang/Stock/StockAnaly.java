@@ -17,12 +17,13 @@ public class StockAnaly {
 
 	public static void main(String[] args) {
 //		Moni();
+
+		SetBuyDate();
+		SetSellDate();
 		
-		AanalyZhuang("600628","2014-01-01","2015-02-02",1,5,5);
+//		AanalyZhuang("600628","2014-01-01","2015-02-02",1,5,5);
 //		SetLowPercent();
-		SetLastClosePrice();
-//		SetBuyDate();
-//		SetSellDate();
+//		SetLastClosePrice();
 	}
 	
 	public static void AanalyZhuang(String code,String begin,String end,int days,int beforeDays,double times){
@@ -65,7 +66,7 @@ public class StockAnaly {
 	public static void Moni() {
 		System.out.println("moni start!");
 		List sq = StockTransactionDetailDao
-				.QuerySql("select DISTINCT TransactionDate from stocktransactiondetail where TransactionDate>'2014-01-01' and TransactionDate<'2015-01-01' order by TransactionDate");
+				.QuerySql("select DISTINCT TransactionDate from stocktransactiondetail where TransactionDate>'2014-01-01'  order by TransactionDate");
 		Iterator it = sq.iterator();
 		while (it.hasNext()) {
 			String transactionDate = ((Date) it.next()).toString();
@@ -79,7 +80,7 @@ public class StockAnaly {
 					if(!detail.getCode().startsWith("3")){
 						String sqlSecond=String.format("select *  from stocktransactiondetail where Code='%s' and TransactionDate<'%s' order by TransactionDate desc limit 0,2", detail.getCode(),detail.getTransactionDate().toString());
 						List<StockTransactionDetail> secondDetails=StockTransactionDetailDao.Query(sqlSecond);
-						if(secondDetails.get(0).getEndPrice()<detail.getEndPrice()&&secondDetails.get(1).getEndPrice()>secondDetails.get(0).getEndPrice()){
+						if(secondDetails.size()>=2 && secondDetails.get(0).getEndPrice()<detail.getEndPrice()&&secondDetails.get(1).getEndPrice()>secondDetails.get(0).getEndPrice()){
 							PlanDeal deal = new PlanDeal();
 							deal.setTransactionDate(detail.getTransactionDate());
 							deal.setCode(detail.getCode());
@@ -87,6 +88,7 @@ public class StockAnaly {
 							deal.setClosePrice(detail.getEndPrice());
 							deal.setExceptBuyPrice(detail.getLowestPrice());
 							deal.setExceptSellPrice(detail.getHighestPrice());
+							deal.setSymbol(GetSymbolByCode(detail.getCode()));
 							PlanDealDao.AddStockInfo(deal);
 							i--;
 							if(i<1){
@@ -165,4 +167,14 @@ public class StockAnaly {
 		}
 		System.out.println("SetLastClosePrice end!");
 	}
+	public static String GetSymbolByCode(String code){
+		String symbol="";
+		String sql=String.format("select * from stockinfo where code='%s'", code);
+		StockInfo stock=StockInfoDao.QueryUnique(sql);
+		if(stock!=null){
+			symbol=stock.getSymbol();
+		}
+		return symbol;
+	}
+	
 }
