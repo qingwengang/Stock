@@ -16,14 +16,15 @@ import com.ganggang.Util.FormatUtil;
 public class StockAnaly {
 
 	public static void main(String[] args) {
-//		Moni();
-
+//		Moni(0.92,1.05,2);
+		Moni(0.90,1.05,3);
 		SetBuyDate();
 		SetSellDate();
+		SetLastClosePrice();
 		
 //		AanalyZhuang("600628","2014-01-01","2015-02-02",1,5,5);
 //		SetLowPercent();
-//		SetLastClosePrice();
+		
 	}
 	
 	public static void AanalyZhuang(String code,String begin,String end,int days,int beforeDays,double times){
@@ -62,7 +63,45 @@ public class StockAnaly {
 		System.out.println("AanalyZhuang end");
 	}
 	
-
+	public static void Moni(double buyRate,double sellRate,int planType){
+		System.out.println("moni start!");
+		List sq = StockTransactionDetailDao
+				.QuerySql("select DISTINCT TransactionDate from stocktransactiondetail where TransactionDate>'2014-01-01'  order by TransactionDate");
+		Iterator it = sq.iterator();
+		while (it.hasNext()) {
+			String transactionDate = ((Date) it.next()).toString();
+			List<StockTransactionDetail> details = StockTransactionDetailDao
+					.Query(String
+							.format("select * from stocktransactiondetail where TransactionDate='%s' and EndPrice>BeginPrice order by VolumeRate desc LIMIT 0,100",
+									transactionDate));
+			if (details != null) {
+				int i=1;
+				for (StockTransactionDetail detail : details) {
+					if(!detail.getCode().startsWith("3")){
+						String sqlSecond=String.format("select *  from stocktransactiondetail where Code='%s' and TransactionDate<'%s' order by TransactionDate desc limit 0,2", detail.getCode(),detail.getTransactionDate().toString());
+						List<StockTransactionDetail> secondDetails=StockTransactionDetailDao.Query(sqlSecond);
+						if(secondDetails.size()>=2 && secondDetails.get(0).getEndPrice()<detail.getEndPrice()&&secondDetails.get(1).getEndPrice()>secondDetails.get(0).getEndPrice()){
+							PlanDeal deal = new PlanDeal();
+							deal.setTransactionDate(detail.getTransactionDate());
+							deal.setCode(detail.getCode());
+							deal.setVolumeRate(detail.getVolumeRate());
+							deal.setClosePrice(detail.getEndPrice());
+							deal.setExceptBuyPrice(detail.getEndPrice()*buyRate);
+							deal.setExceptSellPrice(detail.getEndPrice()*sellRate);
+							deal.setSymbol(GetSymbolByCode(detail.getCode()));
+							deal.setPlantype(planType);
+							PlanDealDao.AddStockInfo(deal);
+							i--;
+							if(i<1){
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		System.out.println("moni end!");
+	}
 	public static void Moni() {
 		System.out.println("moni start!");
 		List sq = StockTransactionDetailDao
@@ -86,8 +125,8 @@ public class StockAnaly {
 							deal.setCode(detail.getCode());
 							deal.setVolumeRate(detail.getVolumeRate());
 							deal.setClosePrice(detail.getEndPrice());
-							deal.setExceptBuyPrice(detail.getLowestPrice());
-							deal.setExceptSellPrice(detail.getHighestPrice());
+							deal.setExceptBuyPrice(detail.getEndPrice()*0.95);
+							deal.setExceptSellPrice(detail.getEndPrice()*1.05);
 							deal.setSymbol(GetSymbolByCode(detail.getCode()));
 							PlanDealDao.AddStockInfo(deal);
 							i--;
