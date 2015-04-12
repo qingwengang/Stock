@@ -16,8 +16,9 @@ import com.ganggang.Util.FormatUtil;
 public class StockAnaly {
 
 	public static void main(String[] args) {
+		Moni(0.95,1.05,1);
 //		Moni(0.92,1.05,2);
-		Moni(0.90,1.05,3);
+//		Moni(0.90,1.05,3);
 		SetBuyDate();
 		SetSellDate();
 		SetLastClosePrice();

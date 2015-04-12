@@ -13,12 +13,12 @@ import com.ganggang.Util.FormatUtil;
 public class StockLiangHua {
 
 	public static void main(String[] args) throws ParseException {
-		System.out.println(GetBump("600156"));
+//		System.out.println(GetBump("002736"));
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-		String dateString="2014-01-16";
+		String dateString="2015-03-20";
 		Date date = sdf.parse(dateString);
-		System.out.println(GetBumpTimeByPercent(5, 5, date, "600156"));
-		System.out.println(GetBumpPriceByTime(date, "600156", 100));
+		System.out.print(GetBumpTimeByPercent(5, 5, date, "002736"));
+		System.out.println(GetBumpPriceByTime(date, "002736", 30));
 	}
 	
 	public static List<StockTransactionDetail> GetBump(String code){
@@ -47,6 +47,8 @@ public class StockLiangHua {
 	}
 	
 	public static List<StockTransactionDetail> GetBumpPriceByTime(Date focusDate,String code,int days){
+		String sqlGet=String.format("select * from stocktransactiondetail where TransactionDate='%s' and code='%s'", (new SimpleDateFormat("yyyy-MM-dd")).format(focusDate).toString(),code);
+		StockTransactionDetail detail=StockTransactionDetailDao.QueryUnique(sqlGet);
 		List<StockTransactionDetail> result=new LinkedList<StockTransactionDetail>();
 		String sql=String.format("select * from stocktransactiondetail where TransactionDate>'%s' and code='%s' order by TransactionDate limit 0,%s", FormatUtil.GetStringByDate(focusDate),code,days);
 		List<StockTransactionDetail> details=StockTransactionDetailDao.Query(sql);
@@ -60,6 +62,8 @@ public class StockLiangHua {
 		}
 		result.add(details.get(begin));
 		result.add(details.get(end));
+		System.out.print(details.get(begin).getLowestPrice()/detail.getEndPrice()+"  ");
+		System.out.println(details.get(end).getHighestPrice()/detail.getEndPrice());
 		return result;
 	}
 
